@@ -86,23 +86,6 @@ export const App = () => {
     }
   };
 
-  const handleReferee = async (phone) => {
-    try {
-      setLoading(true);
-      const url = `https://backend.wisechamps.app/user`;
-      const res = await axios.post(url, { phone: phone });
-      const mode = res.data.mode;
-      if (mode === "user") {
-        setRefereeName(res.data.user.name);
-      }
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log("error is ------------", error);
-    }
-  };
-
   const handleChangeReferralGrade = (e) => {
     const referralgrade = e.target.value;
     setReferralGrade(referralgrade);
@@ -111,10 +94,32 @@ export const App = () => {
   const handleGradeSubmit = async (referralGrade, phone) => {
     try {
       setLoading(true);
-      await handleReferee(phone);
-      const url = `https://backend.wisechamps.app/referral/grade`;
-      const res = await axios.post(url, { referralGrade: referralGrade });
-      console.log(res.data);
+      const urlUser = `https://backend.wisechamps.app/user`;
+      const resUser = await axios.post(urlUser, { phone: phone });
+      const modeUser = resUser.data.mode;
+      if (modeUser === "user") {
+        setRefereeName(resUser.data.user.name);
+      }
+      console.log(refereeName);
+      const url = `https://backend.wisechamps.app/dailyQuiz/grade`;
+      const res = await axios.post(url, { grade: referralGrade });
+      const mode = res.data.mode;
+      if (mode === "question") {
+        setQuestion(res.data.question);
+      }
+      setMode(mode);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
+  const handleReferralSubmit = async () => {
+    try {
+      setLoading(true);
+
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -127,9 +132,6 @@ export const App = () => {
     if (email) {
       handleClick(email);
     }
-    // if (refereePhone) {
-    //   handleReferee(refereePhone);
-    // }
   }, []);
 
   if (loading) {
@@ -373,7 +375,7 @@ export const App = () => {
         </label>
         <button
           id="submit-btn"
-          onClick={() => handleGradeSubmit(referralGrade, phone)}
+          onClick={() => handleGradeSubmit(referralGrade, refereePhone)}
           style={{
             marginTop: "10px",
             width: "100%",
@@ -479,13 +481,16 @@ export const App = () => {
           <button
             style={{ marginTop: "20px" }}
             id="submit-btn"
-            onClick={() =>
-              handleSubmit({
-                contactId: contact,
-                questionId: question.id,
-                optionSelected: option,
-                correctAnswer: question.Correct_Answer === option,
-              })
+            onClick={
+              refereePhone
+                ? () =>
+                    handleSubmit({
+                      contactId: contact,
+                      questionId: question.id,
+                      optionSelected: option,
+                      correctAnswer: question.Correct_Answer === option,
+                    })
+                : () => handleReferralSubmit()
             }
           >
             Submit
