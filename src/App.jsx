@@ -8,18 +8,41 @@ import whatsapp from "./assets/whatsapp.svg";
 export const App = () => {
   const query = new URLSearchParams(window.location.search);
   const [email, setEmail] = useState(query.get("email"));
-  const [refereePhone, setRefereePhone] = useState(query.get("refereeId"));
-  const [refereeName, setRefereeName] = useState(query.get(""));
+  const [refereePhone, setRefereePhone] = useState(
+    query.get("refereeId") ? query.get("refereeId") : ""
+  );
+
+  const [refereeName, setRefereeName] = useState("");
+  const [refereeId, setRefereeId] = useState("");
   const [mode, setMode] = useState(refereePhone ? "referee" : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [question, setQuestion] = useState({});
   const [option, setOption] = useState("");
   const [contact, setContact] = useState("");
+  const [contactName, setContactName] = useState("");
   const [phone, setPhone] = useState("");
   const [referralGrade, setReferralGrade] = useState("");
+  const [registerForm, setRegisterForm] = useState({
+    email: "",
+    phone: "",
+    parent_name: "",
+    student_name: "",
+    student_grade: referralGrade,
+  });
 
-  let whatsappHerf = `https://wa.me?text=https://daily.wisechamps.com?refereeId=${phone}`;
+  const groupLink = {
+    1: "https://chat.whatsapp.com/HbzkEq9NAlyH2yoYyeQGyN",
+    2: "https://chat.whatsapp.com/JqCJFaOyUXZ63VnL7tS9uT",
+    3: "https://chat.whatsapp.com/GzfJID0FO4IKRniHh7xJFp",
+    4: "https://chat.whatsapp.com/DvmyeHlCjX9DR1BGf9um5b",
+    5: "https://chat.whatsapp.com/C80PqSRUVhB99KDsqnt4RU",
+    6: "https://chat.whatsapp.com/HikqKdugjl1GEivi3z6uu8",
+    7: "https://chat.whatsapp.com/Fqy58AAIdXe8e5hOmaBAmG",
+    8: "https://chat.whatsapp.com/IBTREs50YrpKufj77GEnNi",
+  };
+
+  let whatsappHerf = `https://wa.me?text=Hey%20Friend!%0A%0ALike%20me%20you%20can%20improve%20your%20*VITAMIN%20IQ*%20by%20attempting%20daily%20quizzes%20with%20*WISECHAMPS*.%0A%0AAnswer%20today%27s%20amazing%20question%20and%20get%20free%20quiz%20credits.%0A%0AQuiz%20Link%20-%20https%3A%2F%2Fdaily.wisechamps.com%3FrefereeId=${phone}`;
 
   const emailRegex = new RegExp(
     /^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/,
@@ -35,6 +58,20 @@ export const App = () => {
     const option = e.target.value;
     setOption(option);
   };
+
+  const handleChangeReferralGrade = (e) => {
+    const referralgrade = e.target.value;
+    setReferralGrade(referralgrade);
+  };
+
+  const handleFormChange = (e) => {
+    e.preventDefault();
+    const value = e.target.value;
+    const name = e.target.name;
+    setRegisterForm({ ...registerForm, [name]: value });
+  };
+
+  console.log("Form", registerForm);
 
   const handleClick = async (emailParam) => {
     if (!emailRegex.test(emailParam)) {
@@ -52,6 +89,7 @@ export const App = () => {
         setQuestion(res.data.question);
         setContact(res.data.id);
         setPhone(res.data.phone);
+        setContactName(res.data.name);
       }
       setLoading(false);
     } catch (error) {
@@ -76,7 +114,6 @@ export const App = () => {
         optionSelected,
         correctAnswer,
       });
-      console.log(res.data);
       setMode("attemptcaptured");
       setLoading(false);
     } catch (error) {
@@ -86,23 +123,11 @@ export const App = () => {
     }
   };
 
-  const handleChangeReferralGrade = (e) => {
-    const referralgrade = e.target.value;
-    setReferralGrade(referralgrade);
-  };
-
   const handleGradeSubmit = async (referralGrade, phone) => {
     try {
       setLoading(true);
-      const urlUser = `https://backend.wisechamps.app/user`;
-      const resUser = await axios.post(urlUser, { phone: phone });
-      const modeUser = resUser.data.mode;
-      if (modeUser === "user") {
-        setRefereeName(resUser.data.user.name);
-      }
-      console.log(refereeName);
       const url = `https://backend.wisechamps.app/dailyQuiz/grade`;
-      const res = await axios.post(url, { grade: referralGrade });
+      const res = await axios.post(url, { grade: referralGrade, phone: phone });
       const mode = res.data.mode;
       if (mode === "question") {
         setQuestion(res.data.question);
@@ -119,7 +144,60 @@ export const App = () => {
   const handleReferralSubmit = async () => {
     try {
       setLoading(true);
+      setMode("registernow");
+      setRegisterForm({ ...registerForm, student_grade: referralGrade });
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
 
+  const handleRegisterFormClick = async (e, data, refereeId) => {
+    try {
+      e.preventDefault();
+      if (
+        !data.email ||
+        !data.phone ||
+        !data.parent_name ||
+        !data.student_name ||
+        !data.student_grade
+      ) {
+        alert("Please Fill all the required details.");
+        return;
+      }
+      setLoading(true);
+      const url = `https://backend.wisechamps.app/user/add`;
+      const res = await axios.post(url, {
+        email: data.email,
+        phone: data.phone,
+        parent_name: data.parent_name,
+        student_name: data.student_name,
+        student_grade: data.student_grade,
+        referralId: refereeId,
+      });
+      const mode = res.data.mode;
+      window.location.assign(groupLink[referralGrade]);
+      setMode(mode);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
+  const fetchReferee = async (phone) => {
+    try {
+      setLoading(true);
+      const urlUser = `https://backend.wisechamps.app/user`;
+      const resUser = await axios.post(urlUser, { phone: phone });
+      const modeUser = resUser.data.mode;
+      if (modeUser === "user") {
+        setRefereeName(resUser.data.user.name);
+        setRefereeId(resUser.data.user.id);
+      }
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -132,7 +210,118 @@ export const App = () => {
     if (email) {
       handleClick(email);
     }
+    if (refereePhone) {
+      fetchReferee(refereePhone);
+    }
   }, []);
+
+  if (mode === "registernow") {
+    return (
+      <div
+        className="main registerForm"
+        style={{
+          marginTop: "10px",
+        }}
+      >
+        {refereeName ? (
+          <p>
+            <b>{refereeName}</b> attending these quizzes daily and becoming
+            smarter everyday. <br /> <br />
+            Join our Whatsapp group and solve such amazing questions everyday.
+          </p>
+        ) : (
+          ""
+        )}
+        <br />
+        <hr />
+        <br />
+        <form>
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              inputMode="email"
+              onChange={handleFormChange}
+              name="email"
+              required
+            />
+          </div>
+          <div>
+            <label>Phone</label>
+            <input
+              type="tel"
+              inputMode="tel"
+              onChange={handleFormChange}
+              name="phone"
+              required
+            />
+          </div>
+          <div>
+            <label>Parent Name</label>
+            <input
+              type="text"
+              inputMode="text"
+              onChange={handleFormChange}
+              name="parent_name"
+              required
+            />
+          </div>
+          <div>
+            <label>Student Name</label>
+            <input
+              type="text"
+              inputMode="text"
+              onChange={handleFormChange}
+              name="student_name"
+              required
+            />
+          </div>
+          <div>
+            <label>Student Grade</label>
+            <select
+              onChange={handleFormChange}
+              name="student_grade"
+              defaultValue={referralGrade}
+              required
+            >
+              <option value={"none"}>-None-</option>
+              <option value={"1"}>Grade 1</option>
+              <option value={"2"}>Grade 2</option>
+              <option value={"3"}>Grade 3</option>
+              <option value={"4"}>Grade 4</option>
+              <option value={"5"}>Grade 5</option>
+              <option value={"6"}>Grade 6</option>
+              <option value={"7"}>Grade 7</option>
+              <option value={"8"}>Grade 8</option>
+            </select>
+          </div>
+          <button
+            style={{
+              border: "none",
+              padding: "0.5rem 1.5rem",
+              width: "unset",
+              marginTop: "10px",
+            }}
+            onClick={(e) => handleRegisterFormClick(e, registerForm, refereeId)}
+          >
+            <img
+              alt="Share on WhatsApp"
+              src={whatsapp}
+              width={"40px"}
+              height={"40px"}
+            />
+            <p
+              style={{
+                fontWeight: "600",
+              }}
+            >
+              Join Now
+            </p>
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -142,7 +331,9 @@ export const App = () => {
         }}
       >
         <p style={{ fontSize: "18px" }}>
-          {mode !== "question"
+          {mode === "referee"
+            ? "Loading.."
+            : mode !== "question"
             ? "Finding question of the day.."
             : "Submitting your response.."}
         </p>
@@ -156,21 +347,46 @@ export const App = () => {
     );
   }
 
+  console.log(mode);
+
+  if (mode === "noquestion") {
+    return (
+      <div>
+        <p>OPPS! No question is available, Please try again tomorrow</p>
+      </div>
+    );
+  }
+
   if (mode === "referee") {
     return (
       <div
-        className="main"
         style={{
-          padding: "2rem 4rem",
+          width: "90%",
+          margin: "auto",
         }}
       >
-        <h3>Select Student's Grade</h3>
-        <label
-          className="label"
+        <p>
+          Lets find out if you are smarter than <b>{refereeName} </b>who
+          challenged you today
+        </p>
+        <button
+          id="submit-btn"
           style={{
-            gap: "30px",
+            marginTop: "15px",
           }}
+          onClick={() => setMode("refereeReady")}
         >
+          I am Ready
+        </button>
+      </div>
+    );
+  }
+
+  if (mode === "refereeReady") {
+    return (
+      <div className="main mainReferee">
+        <h3>Select Your Grade</h3>
+        <label className="label">
           <input
             value="1"
             name="value-radio"
@@ -191,12 +407,7 @@ export const App = () => {
             Grade 1
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="2"
             name="value-radio"
@@ -217,12 +428,7 @@ export const App = () => {
             Grade 2
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="3"
             name="value-radio"
@@ -243,12 +449,7 @@ export const App = () => {
             Grade 3
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="4"
             name="value-radio"
@@ -269,12 +470,7 @@ export const App = () => {
             Grade 4
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="5"
             name="value-radio"
@@ -295,12 +491,7 @@ export const App = () => {
             Grade 5
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="6"
             name="value-radio"
@@ -321,12 +512,7 @@ export const App = () => {
             Grade 6
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="7"
             name="value-radio"
@@ -347,12 +533,7 @@ export const App = () => {
             Grade 7
           </div>
         </label>
-        <label
-          className="label"
-          style={{
-            gap: "30px",
-          }}
-        >
+        <label className="label">
           <input
             value="8"
             name="value-radio"
@@ -397,18 +578,12 @@ export const App = () => {
       </div>
     );
   }
-  if (mode === "attemptcaptured") {
+  if (mode === "referfriend") {
     return (
-      <div className="quizSubmitted">
-        <p>To know the right answer, attend today's live quiz.</p>
-
-        <p>
-          A free credit will be added to your account if you are the lucky one
-          to get selected.
-        </p>
-        <p>
-          To get an ASSURED free credit, share this question with a friend, and
-          both of you get one credit each.
+      <div className="main quizSubmitted">
+        <p style={{}}>
+          Challenge your friend and get a garunteed free credit once they answer
+          this question.
         </p>
         <div>
           <a href={whatsappHerf}>
@@ -418,8 +593,44 @@ export const App = () => {
               width={"40px"}
               height={"40px"}
             />
-            <p>Refer a friend</p>
+            <p>Challenge a friend</p>
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "attemptcaptured") {
+    return (
+      <div className="quizSubmitted">
+        <p>We have successfully received your response, {contactName}</p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => setMode("referfriend")}
+          >
+            I want free credits
+          </button>
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => setMode("")}
+          >
+            I don't want free credits
+          </button>
         </div>
       </div>
     );
@@ -427,9 +638,27 @@ export const App = () => {
 
   if (mode === "question") {
     return (
-      <div>
+      <div className="question">
         <div className="radio-input-wrapper">
-          <p>{question.Question}</p>
+          <p>{question.Question ? question.Question : ""}</p>
+          {question.Question_Image_URL ? (
+            <div
+              style={{
+                maxWidth: "100%",
+                margin: "10px auto",
+                border: "1px solid #ccc",
+              }}
+            >
+              <img
+                src={question.Question_Image_URL}
+                alt="Question_Image"
+                width={"250px"}
+                height={"140px"}
+              />
+            </div>
+          ) : (
+            ""
+          )}
           <label className="label">
             <input
               value="Option 1"
@@ -483,14 +712,14 @@ export const App = () => {
             id="submit-btn"
             onClick={
               refereePhone
-                ? () =>
+                ? () => handleReferralSubmit()
+                : () =>
                     handleSubmit({
                       contactId: contact,
                       questionId: question.id,
                       optionSelected: option,
                       correctAnswer: question.Correct_Answer === option,
                     })
-                : () => handleReferralSubmit()
             }
           >
             Submit
