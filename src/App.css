@@ -339,3 +339,19 @@ select {
   background-color: #fff;
   box-shadow: 0 0 0 5px rgb(129 140 248 / 30%);
 }
+
+.correctAnswer,
+.wrongAnswer {
+  padding: 0 1.5rem;
+  border-radius: 10px;
+  color: white;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.correctAnswer {
+  background-color: #55cd6c;
+}
+
+.wrongAnswer {
+  background-color: #f44336;
+}

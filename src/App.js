@@ -4,6 +4,9 @@ import axios from "axios";
 import "./App.css";
 import { useEffect } from "react";
 import whatsapp from "./assets/whatsapp.svg";
+import correct from "./assets/correct.png";
+import incorrect from "./assets/incorrect.png";
+import "animate.css";
 
 export const App = () => {
   const query = new URLSearchParams(window.location.search);
@@ -11,6 +14,8 @@ export const App = () => {
   const [refereePhone, setRefereePhone] = useState(
     query.get("refereeId") ? query.get("refereeId") : ""
   );
+
+  // To attend more such exiting question join out live quizzes
 
   const [refereeName, setRefereeName] = useState("");
   const [refereeId, setRefereeId] = useState("");
@@ -71,8 +76,6 @@ export const App = () => {
     setRegisterForm({ ...registerForm, [name]: value });
   };
 
-  console.log("Form", registerForm);
-
   const handleClick = async (emailParam) => {
     if (!emailRegex.test(emailParam)) {
       alert("Please Enter a Valid Email");
@@ -106,16 +109,21 @@ export const App = () => {
     correctAnswer,
   }) => {
     try {
-      setLoading(true);
-      const url = `https://backend.wisechamps.app/question/attempt`;
-      const res = await axios.post(url, {
-        contactId,
-        questionId,
-        optionSelected,
-        correctAnswer,
-      });
-      setMode("attemptcaptured");
-      setLoading(false);
+      console.log("Correct answer ", question.Correct_Answer);
+      console.log("Selected Option", option);
+      setMode("showanswer");
+      setTimeout(async () => {
+        setLoading(true);
+        const url = `https://backend.wisechamps.app/question/attempt`;
+        const res = await axios.post(url, {
+          contactId,
+          questionId,
+          optionSelected,
+          correctAnswer,
+        });
+        setMode("attemptcaptured");
+        setLoading(false);
+      }, 2000);
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -143,10 +151,13 @@ export const App = () => {
 
   const handleReferralSubmit = async () => {
     try {
-      setLoading(true);
-      setMode("registernow");
-      setRegisterForm({ ...registerForm, student_grade: referralGrade });
-      setLoading(false);
+      setMode("showanswer");
+      setTimeout(() => {
+        setLoading(true);
+        setMode("registernow");
+        setRegisterForm({ ...registerForm, student_grade: referralGrade });
+        setLoading(false);
+      }, 2000);
     } catch (error) {
       setLoading(false);
       setError(true);
@@ -331,11 +342,11 @@ export const App = () => {
         }}
       >
         <p style={{ fontSize: "18px" }}>
-          {mode === "referee"
-            ? "Loading.."
-            : mode !== "question"
+          {mode === "showanswer"
+            ? "Submitting your response.."
+            : mode !== "question" && !refereePhone
             ? "Finding question of the day.."
-            : "Submitting your response.."}
+            : "Loading.."}
         </p>
         <RaceBy
           size={300}
@@ -346,8 +357,6 @@ export const App = () => {
       </div>
     );
   }
-
-  console.log(mode);
 
   if (mode === "noquestion") {
     return (
@@ -725,6 +734,45 @@ export const App = () => {
             Submit
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (mode === "showanswer") {
+    return (
+      <div
+        className={
+          question.Correct_Answer === option
+            ? "correctAnswer animate__animated animate__bounceIn"
+            : "wrongAnswer animate__animated animate__bounceIn"
+        }
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "10px",
+        }}
+      >
+        <p
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "2px solid white",
+            borderRadius: "50%",
+          }}
+        >
+          {question.Correct_Answer === option ? (
+            <img src={correct} alt="correct-logo" width={"50px"} />
+          ) : (
+            <img src={incorrect} alt="incorrect-logo" width={"40px"} />
+          )}
+        </p>
+        <p>
+          {question.Correct_Answer === option
+            ? "Correct Answer"
+            : "Incorrect Answer"}
+        </p>
       </div>
     );
   }
