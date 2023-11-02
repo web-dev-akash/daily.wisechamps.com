@@ -6,7 +6,11 @@ import { useEffect } from "react";
 import whatsapp from "./assets/whatsapp.svg";
 import correct from "./assets/correct.png";
 import incorrect from "./assets/incorrect.png";
+import logo from "./assets/Logo.png";
 import "animate.css";
+import { CarousalMain } from "./Components/Carousel/js/CarousalMain";
+
+const loadingMessages = [""];
 
 export const App = () => {
   const query = new URLSearchParams(window.location.search);
@@ -15,6 +19,11 @@ export const App = () => {
     query.get("refereeId") ? query.get("refereeId") : ""
   );
 
+  const [feedbackData, setFeedbackData] = useState({
+    difficulty: "",
+    think: "",
+    remind: "",
+  });
   // To attend more such exiting question join out live quizzes
 
   const [refereeName, setRefereeName] = useState("");
@@ -49,6 +58,8 @@ export const App = () => {
 
   let whatsappHerf = `https://wa.me?text=Hey%20Friend!%0A%0ALike%20me%20you%20can%20improve%20your%20*VITAMIN%20IQ*%20by%20attempting%20daily%20quizzes%20with%20*WISECHAMPS*.%0A%0AAnswer%20today%27s%20amazing%20question%20and%20get%20free%20quiz%20credits.%0A%0AQuiz%20Link%20-%20https%3A%2F%2Fdaily.wisechamps.com%3FrefereeId=${phone}`;
 
+  let whatsappChannelLink = `https://whatsapp.com/channel/0029VaDJVAS1t90kQj9ymi27`;
+
   const emailRegex = new RegExp(
     /^[A-Za-z0-9_!#$%&'*+\/=?`{|}~^.-]+@[A-Za-z0-9.-]+$/,
     "gm"
@@ -73,15 +84,13 @@ export const App = () => {
     e.preventDefault();
     const value = e.target.value;
     const name = e.target.name;
+    if (name === "student_grade") {
+      setReferralGrade(value);
+    }
     setRegisterForm({ ...registerForm, [name]: value });
   };
 
   const handleClick = async (emailParam) => {
-    if (!emailRegex.test(emailParam)) {
-      alert("Please Enter a Valid Email");
-      window.location.reload();
-      return;
-    }
     try {
       setLoading(true);
       const url = `https://backend.wisechamps.app/dailyQuiz`;
@@ -109,8 +118,6 @@ export const App = () => {
     correctAnswer,
   }) => {
     try {
-      console.log("Correct answer ", question.Correct_Answer);
-      console.log("Selected Option", option);
       setMode("showanswer");
       setTimeout(async () => {
         setLoading(true);
@@ -178,6 +185,26 @@ export const App = () => {
         alert("Please Fill all the required details.");
         return;
       }
+      if (!emailRegex.test(data.email)) {
+        alert("Please Enter a Valid Email");
+        return;
+      }
+      if (data.phone.length < 10) {
+        alert("Please Enter a Valid Phone Number");
+        return;
+      }
+      if (data.parent_name.length < 3) {
+        alert("Please Enter a Valid Parent Name");
+        return;
+      }
+      if (data.student_name.length < 3) {
+        alert("Please Enter a Valid Student Name");
+        return;
+      }
+      if (data.student_grade.value === "none") {
+        alert("Please select a Valid Student Grade");
+        return;
+      }
       setLoading(true);
       const url = `https://backend.wisechamps.app/user/add`;
       const res = await axios.post(url, {
@@ -186,10 +213,9 @@ export const App = () => {
         parent_name: data.parent_name,
         student_name: data.student_name,
         student_grade: data.student_grade,
-        referralId: refereeId,
+        referralId: refereeId ? refereeId : "",
       });
       const mode = res.data.mode;
-      window.location.assign(groupLink[referralGrade]);
       setMode(mode);
       setLoading(false);
     } catch (error) {
@@ -241,7 +267,15 @@ export const App = () => {
             Join our Whatsapp group and solve such amazing questions everyday.
           </p>
         ) : (
-          ""
+          <p
+            style={{
+              textAlign: "center",
+              fontWeight: "500",
+              marginBottom: "5px",
+            }}
+          >
+            Register with us to save your progress and get reminders.
+          </p>
         )}
         <br />
         <hr />
@@ -260,7 +294,7 @@ export const App = () => {
           <div>
             <label>Phone</label>
             <input
-              type="tel"
+              type="number"
               inputMode="tel"
               onChange={handleFormChange}
               name="phone"
@@ -307,26 +341,37 @@ export const App = () => {
             </select>
           </div>
           <button
-            style={{
-              border: "none",
-              padding: "0.5rem 1.5rem",
-              width: "unset",
-              marginTop: "10px",
-            }}
+            style={
+              refereePhone
+                ? {
+                    border: "none",
+                    padding: "0.5rem 1.5rem",
+                    width: "unset",
+                    marginTop: "10px",
+                  }
+                : {
+                    width: "50%",
+                    padding: "0",
+                    marginTop: "20px",
+                  }
+            }
+            id={!refereePhone ? "submit-btn" : ""}
             onClick={(e) => handleRegisterFormClick(e, registerForm, refereeId)}
           >
-            <img
-              alt="Share on WhatsApp"
-              src={whatsapp}
-              width={"40px"}
-              height={"40px"}
-            />
+            {refereePhone ? (
+              <img
+                alt="Share on WhatsApp"
+                src={whatsapp}
+                width={"40px"}
+                height={"40px"}
+              />
+            ) : null}
             <p
               style={{
                 fontWeight: "600",
               }}
             >
-              Join Now
+              {refereeName ? "Join Now" : "Submit"}
             </p>
           </button>
         </form>
@@ -361,7 +406,7 @@ export const App = () => {
   if (mode === "noquestion") {
     return (
       <div>
-        <p>OPPS! No question is available, Please try again tomorrow</p>
+        <p>OOPS! No question available, Please try again tomorrow</p>
       </div>
     );
   }
@@ -609,10 +654,65 @@ export const App = () => {
     );
   }
 
+  const handleDifficulty = async (value, mode) => {
+    try {
+      setLoading(true);
+      setFeedbackData({ ...feedbackData, difficulty: value });
+      setMode(mode);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
+  const handleThink = async (value, mode) => {
+    try {
+      setLoading(true);
+      setFeedbackData({ ...feedbackData, think: value });
+      setMode(mode);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
+  const handleReminder = async (value) => {
+    try {
+      setLoading(true);
+      setFeedbackData({ ...feedbackData, remind: value });
+      const urlUser = `https://backend.wisechamps.app/user/feedback`;
+      const resUser = await axios.post(urlUser, {
+        feedbackData: { ...feedbackData, email: email, remind: value },
+      });
+      !contact && !refereePhone
+        ? setMode("registernow")
+        : setMode("remindmetomorrow");
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
+  console.log("Feedback data :", feedbackData);
+
   if (mode === "attemptcaptured") {
     return (
-      <div className="quizSubmitted">
-        <p>We have successfully received your response, {contactName}</p>
+      <div className="feedback">
+        <p
+          style={{
+            fontSize: "17px",
+            fontWeight: "500",
+            margin: "20px",
+          }}
+        >
+          How difficult was the question ?
+        </p>
         <div
           style={{
             display: "flex",
@@ -627,19 +727,162 @@ export const App = () => {
             style={{
               width: "70%",
             }}
-            onClick={() => setMode("referfriend")}
+            onClick={() => handleDifficulty("It was too easy", "makeyouthink")}
           >
-            I want free credits
+            It was too easy
           </button>
           <button
             id="submit-btn"
             style={{
               width: "70%",
             }}
-            onClick={() => setMode("")}
+            onClick={() =>
+              handleDifficulty("It was just right", "makeyouthink")
+            }
           >
-            I don't want free credits
+            It was just right
           </button>
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => handleDifficulty("It was too hard", "makeyouthink")}
+          >
+            It was too hard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "makeyouthink") {
+    return (
+      <div className="feedback">
+        <p
+          style={{
+            fontSize: "17px",
+            fontWeight: "500",
+            margin: "20px",
+          }}
+        >
+          Did it make you think ?
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => handleThink("Yes", "solvingeveryday")}
+          >
+            Yes
+          </button>
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => handleThink("No", "solvingeveryday")}
+          >
+            No
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "solvingeveryday") {
+    return (
+      <div className="feedback">
+        <p
+          style={{
+            fontSize: "17px",
+            fontWeight: "500",
+            margin: "20px",
+          }}
+        >
+          Answering such complex question <b>DAILY</b> can really make you
+          smarter.
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+          }}
+        >
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => handleReminder("Remind me tomorrow")}
+          >
+            Remind me tomorrow
+          </button>
+          <button
+            id="submit-btn"
+            style={{
+              width: "70%",
+            }}
+            onClick={() => handleReminder("Don't show this again")}
+          >
+            Don't show this again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "remindmetomorrow" || mode === "useradded") {
+    return (
+      <div className="quizSubmitted">
+        <p
+          style={{
+            fontSize: "17px",
+            fontWeight: "500",
+            margin: "20px",
+          }}
+        >
+          To stay connected and get daily reminders
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <a href={whatsappChannelLink}>
+            <img
+              alt="Join WhatsApp Channel"
+              src={whatsapp}
+              width={"40px"}
+              height={"40px"}
+            />
+            <p>Join WhatsApp Channel</p>
+          </a>
+          <a href={groupLink[referralGrade]}>
+            <img
+              alt="Join WhatsApp Group"
+              src={whatsapp}
+              width={"40px"}
+              height={"40px"}
+            />
+            <p>Join WhatsApp Group</p>
+          </a>
         </div>
       </div>
     );
@@ -658,12 +901,7 @@ export const App = () => {
                 border: "1px solid #ccc",
               }}
             >
-              <img
-                src={question.Question_Image_URL}
-                alt="Question_Image"
-                width={"250px"}
-                height={"140px"}
-              />
+              <img src={question.Question_Image_URL} alt="Question_Image" />
             </div>
           ) : (
             ""
@@ -815,21 +1053,77 @@ export const App = () => {
     );
   }
 
+  if (mode === "newuser") {
+    return (
+      <div>
+        <h1>New User</h1>
+      </div>
+    );
+  }
+
+  if (mode === "existinguser") {
+    return (
+      <div className="main">
+        <h3>Email</h3>
+        <div className="form">
+          <input
+            className="input"
+            type="email"
+            placeholder="Enter Email"
+            inputMode="email"
+            onChange={handleChange}
+          />
+          <p>* Please use the registered Email.</p>
+          <button id="submit-btn" onClick={() => handleClick(email)}>
+            Submit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="main">
-      <h3>Email</h3>
-      <div className="form">
-        <input
-          className="input"
-          type="email"
-          placeholder="Enter Email"
-          inputMode="email"
-          onChange={handleChange}
+    <div
+      style={{
+        minHeight: "85vh",
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+        justifyContent: "center",
+        padding: "10px",
+      }}
+    >
+      <header>
+        <img
+          src={logo}
+          alt="Wisechamps"
+          style={{
+            position: "absolute",
+            width: "120px",
+            top: "20px",
+            left: "20px",
+          }}
         />
-        <p>* Please use the registered Email.</p>
-        <button id="submit-btn" onClick={() => handleClick(email)}>
-          Submit
-        </button>
+      </header>
+      <div
+        className="main_div"
+        style={{
+          borderRadius: "20px",
+        }}
+      >
+        <CarousalMain />
+        <div>
+          <p>Welcome to Wisechamps</p>
+          {/* <p>Please </p> */}
+        </div>
+        <div className="main-div-btn">
+          <button id="submit-btn" onClick={() => setMode("existinguser")}>
+            Registered User
+          </button>
+          <button id="submit-btn" onClick={() => setMode("refereeReady")}>
+            New User
+          </button>
+        </div>
       </div>
     </div>
   );
