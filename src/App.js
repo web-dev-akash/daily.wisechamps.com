@@ -10,7 +10,15 @@ import logo from "./assets/Logo.png";
 import "animate.css";
 import { CarousalMain } from "./Components/Carousel/js/CarousalMain";
 
-const loadingMessages = [""];
+const participants = Math.round((789 - 340) * Math.random()) + 340;
+
+const loadingMessages = [
+  "1 hard question makes you learn more than 50 simple ones",
+  "An apple a day keeps you healthy, and a question a day makes you smart!",
+  `${participants} have already attempted today’s quiz`,
+  "Rome was not built in a day, and so is true of your IQ!",
+  "Habit is what turns talent into genius! Make sure you practice everyday",
+];
 
 export const App = () => {
   const query = new URLSearchParams(window.location.search);
@@ -87,8 +95,14 @@ export const App = () => {
     if (name === "student_grade") {
       setReferralGrade(value);
     }
-    setRegisterForm({ ...registerForm, [name]: value });
+    setRegisterForm({
+      ...registerForm,
+      [name]: value,
+      student_grade: referralGrade,
+    });
   };
+
+  console.log("Form", registerForm);
 
   const handleClick = async (emailParam) => {
     try {
@@ -102,6 +116,7 @@ export const App = () => {
         setContact(res.data.id);
         setPhone(res.data.phone);
         setContactName(res.data.name);
+        setReferralGrade(res.data.grade);
       }
       setLoading(false);
     } catch (error) {
@@ -384,14 +399,19 @@ export const App = () => {
       <div
         style={{
           overflow: "hidden",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
         }}
       >
-        <p style={{ fontSize: "18px" }}>
-          {mode === "showanswer"
-            ? "Submitting your response.."
-            : mode !== "question" && !refereePhone
-            ? "Finding question of the day.."
-            : "Loading.."}
+        <p
+          style={{
+            fontSize: "18px",
+            width: "90%",
+          }}
+        >
+          {loadingMessages[Math.floor(Math.random() * loadingMessages.length)]}
         </p>
         <RaceBy
           size={300}
@@ -683,10 +703,14 @@ export const App = () => {
   const handleReminder = async (value) => {
     try {
       setLoading(true);
-      setFeedbackData({ ...feedbackData, remind: value });
       const urlUser = `https://backend.wisechamps.app/user/feedback`;
       const resUser = await axios.post(urlUser, {
-        feedbackData: { ...feedbackData, email: email, remind: value },
+        feedbackData: {
+          email: email,
+          difficulty: value,
+          think: "",
+          remind: "",
+        },
       });
       !contact && !refereePhone
         ? setMode("registernow")
@@ -701,7 +725,7 @@ export const App = () => {
 
   console.log("Feedback data :", feedbackData);
 
-  if (mode === "attemptcaptured") {
+  if (mode === "notusing") {
     return (
       <div className="feedback">
         <p
@@ -711,7 +735,7 @@ export const App = () => {
             margin: "20px",
           }}
         >
-          How difficult was the question ?
+          Liked Today's Question ? Will you come back tomorrow ?
         </p>
         <div
           style={{
@@ -756,7 +780,7 @@ export const App = () => {
     );
   }
 
-  if (mode === "makeyouthink") {
+  if (mode === "attemptcaptured") {
     return (
       <div className="feedback">
         <p
@@ -766,7 +790,8 @@ export const App = () => {
             margin: "20px",
           }}
         >
-          Did it make you think ?
+          Liked Today's Question ?
+          <br /> Will you come back tomorrow ?
         </p>
         <div
           style={{
@@ -782,7 +807,7 @@ export const App = () => {
             style={{
               width: "70%",
             }}
-            onClick={() => handleThink("Yes", "solvingeveryday")}
+            onClick={() => handleReminder("Yes")}
           >
             Yes
           </button>
@@ -791,7 +816,7 @@ export const App = () => {
             style={{
               width: "70%",
             }}
-            onClick={() => handleThink("No", "solvingeveryday")}
+            onClick={() => handleReminder("No")}
           >
             No
           </button>
