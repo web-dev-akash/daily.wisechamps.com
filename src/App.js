@@ -157,7 +157,7 @@ export const App = () => {
     try {
       setLoading(true);
       const url = `https://backend.wisechamps.app/dailyQuiz/grade`;
-      const res = await axios.post(url, { grade: referralGrade, phone: phone });
+      const res = await axios.post(url, { grade: referralGrade });
       const mode = res.data.mode;
       if (mode === "question") {
         setQuestion(res.data.question);
