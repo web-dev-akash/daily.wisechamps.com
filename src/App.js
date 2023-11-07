@@ -9,6 +9,7 @@ import incorrect from "./assets/incorrect.png";
 import logo from "./assets/Logo.png";
 import "animate.css";
 import { CarousalMain } from "./Components/Carousel/js/CarousalMain";
+import { Stats } from "./Components/Stats";
 
 const participants = Math.round((789 - 340) * Math.random()) + 340;
 
@@ -36,10 +37,15 @@ export const App = () => {
 
   const [refereeName, setRefereeName] = useState("");
   const [refereeId, setRefereeId] = useState("");
-  const [mode, setMode] = useState(refereePhone ? "referee" : "");
+  const [mode, setMode] = useState(
+    refereePhone ? "referee" : "attemptcaptured"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [question, setQuestion] = useState({});
+  const [attempts, setAttempts] = useState([]);
+  const [streak, setStreak] = useState(1);
+  const [percentage, setPercentage] = useState(15);
   const [option, setOption] = useState("");
   const [contact, setContact] = useState("");
   const [contactName, setContactName] = useState("");
@@ -113,10 +119,13 @@ export const App = () => {
       setMode(mode);
       if (mode === "question") {
         setQuestion(res.data.question);
-        setContact(res.data.id);
-        setPhone(res.data.phone);
-        setContactName(res.data.name);
-        setReferralGrade(res.data.grade);
+        setContact(res.data.user.id);
+        setPhone(res.data.user.phone);
+        setContactName(res.data.user.name);
+        setReferralGrade(res.data.user.grade);
+        setAttempts(res.data.user.attempts);
+        setStreak(res.data.user.streak);
+        setPercentage(res.data.user.percentage);
       }
       setLoading(false);
     } catch (error) {
@@ -153,10 +162,10 @@ export const App = () => {
     }
   };
 
-  const handleGradeSubmit = async (referralGrade, phone) => {
+  const handleGradeSubmit = async (referralGrade) => {
     try {
       setLoading(true);
-      const url = `https://backend.wisechamps.app/dailyQuiz/grade`;
+      const url = `https://backend.wisechamps.app/quizgrade`;
       const res = await axios.post(url, { grade: referralGrade });
       const mode = res.data.mode;
       if (mode === "question") {
@@ -630,7 +639,7 @@ export const App = () => {
         </label>
         <button
           id="submit-btn"
-          onClick={() => handleGradeSubmit(referralGrade, refereePhone)}
+          onClick={() => handleGradeSubmit(referralGrade)}
           style={{
             marginTop: "10px",
             width: "100%",
@@ -781,6 +790,23 @@ export const App = () => {
   }
 
   if (mode === "attemptcaptured") {
+    return (
+      <Stats
+        contactName={contactName ? contactName : "Akash Kumar"}
+        attemps={[
+          { Correct_Answer: true },
+          { Correct_Answer: false },
+          { Correct_Answer: false },
+          { Correct_Answer: false },
+        ]}
+        streak={2}
+        percentage={80}
+        grade={referralGrade ? referralGrade : "6"}
+      />
+    );
+  }
+
+  if (mode === "likedtodaysquestion") {
     return (
       <div className="feedback">
         <p
