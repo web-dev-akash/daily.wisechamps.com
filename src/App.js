@@ -157,7 +157,11 @@ export const App = () => {
           optionSelected,
           correctAnswer,
         });
-        setMode("attemptcaptured");
+        if (email) {
+          setMode("attemptcaptured");
+        } else {
+          setMode("likedtodaysquestion");
+        }
         setLoading(false);
       }, 2000);
     } catch (error) {
