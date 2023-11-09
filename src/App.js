@@ -10,6 +10,7 @@ import logo from "./assets/Logo.png";
 import "animate.css";
 import { CarousalMain } from "./Components/Carousel/js/CarousalMain";
 import { Stats } from "./Components/Stats";
+import { Box } from "@chakra-ui/react";
 
 const participants = Math.round((789 - 340) * Math.random()) + 340;
 
@@ -23,7 +24,12 @@ const loadingMessages = [
 
 export const App = () => {
   const query = new URLSearchParams(window.location.search);
-  const [email, setEmail] = useState(query.get("email"));
+  const localEmail = localStorage.getItem("wisechamps_email")
+    ? localStorage.getItem("wisechamps_email")
+    : null;
+  const [email, setEmail] = useState(
+    query.get("email") ? query.get("email") : localEmail
+  );
   const [refereePhone, setRefereePhone] = useState(
     query.get("refereeId") ? query.get("refereeId") : ""
   );
@@ -37,9 +43,7 @@ export const App = () => {
 
   const [refereeName, setRefereeName] = useState("");
   const [refereeId, setRefereeId] = useState("");
-  const [mode, setMode] = useState(
-    refereePhone ? "referee" : "attemptcaptured"
-  );
+  const [mode, setMode] = useState(refereePhone ? "referee" : "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [question, setQuestion] = useState({});
@@ -113,19 +117,20 @@ export const App = () => {
   const handleClick = async (emailParam) => {
     try {
       setLoading(true);
+      localStorage.setItem("wisechamps_email", emailParam);
       const url = `https://backend.wisechamps.app/dailyQuiz`;
       const res = await axios.post(url, { email: emailParam });
       const mode = res.data.mode;
       setMode(mode);
       if (mode === "question") {
         setQuestion(res.data.question);
-        setContact(res.data.user.id);
-        setPhone(res.data.user.phone);
-        setContactName(res.data.user.name);
-        setReferralGrade(res.data.user.grade);
-        setAttempts(res.data.user.attempts);
-        setStreak(res.data.user.streak);
-        setPercentage(res.data.user.percentage);
+        setContact(res.data.id);
+        setPhone(res.data.phone);
+        setContactName(res.data.name);
+        setReferralGrade(res.data.grade);
+        setAttempts(res.data.attempts);
+        setStreak(res.data.streak);
+        setPercentage(res.data.percentage);
       }
       setLoading(false);
     } catch (error) {
@@ -661,6 +666,7 @@ export const App = () => {
       </div>
     );
   }
+
   if (mode === "referfriend") {
     return (
       <div className="main quizSubmitted">
@@ -682,32 +688,6 @@ export const App = () => {
       </div>
     );
   }
-
-  const handleDifficulty = async (value, mode) => {
-    try {
-      setLoading(true);
-      setFeedbackData({ ...feedbackData, difficulty: value });
-      setMode(mode);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log("error is ------------", error);
-    }
-  };
-
-  const handleThink = async (value, mode) => {
-    try {
-      setLoading(true);
-      setFeedbackData({ ...feedbackData, think: value });
-      setMode(mode);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log("error is ------------", error);
-    }
-  };
 
   const handleReminder = async (value) => {
     try {
@@ -734,75 +714,18 @@ export const App = () => {
 
   console.log("Feedback data :", feedbackData);
 
-  if (mode === "notusing") {
-    return (
-      <div className="feedback">
-        <p
-          style={{
-            fontSize: "17px",
-            fontWeight: "500",
-            margin: "20px",
-          }}
-        >
-          Liked Today's Question ? Will you come back tomorrow ?
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-          }}
-        >
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleDifficulty("It was too easy", "makeyouthink")}
-          >
-            It was too easy
-          </button>
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() =>
-              handleDifficulty("It was just right", "makeyouthink")
-            }
-          >
-            It was just right
-          </button>
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleDifficulty("It was too hard", "makeyouthink")}
-          >
-            It was too hard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (mode === "attemptcaptured") {
     return (
-      <Stats
-        contactName={contactName ? contactName : "Akash Kumar"}
-        attemps={[
-          { Correct_Answer: true },
-          { Correct_Answer: false },
-          { Correct_Answer: false },
-          { Correct_Answer: false },
-        ]}
-        streak={2}
-        percentage={80}
-        grade={referralGrade ? referralGrade : "6"}
-      />
+      <Box display={"flex"} placeItems={"center"}>
+        <Stats
+          contactName={contactName}
+          attemps={attempts}
+          streak={streak}
+          percentage={percentage}
+          grade={referralGrade}
+          setMode={setMode}
+        />
+      </Box>
     );
   }
 
@@ -845,51 +768,6 @@ export const App = () => {
             onClick={() => handleReminder("No")}
           >
             No
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (mode === "solvingeveryday") {
-    return (
-      <div className="feedback">
-        <p
-          style={{
-            fontSize: "17px",
-            fontWeight: "500",
-            margin: "20px",
-          }}
-        >
-          Answering such complex question <b>DAILY</b> can really make you
-          smarter.
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-          }}
-        >
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleReminder("Remind me tomorrow")}
-          >
-            Remind me tomorrow
-          </button>
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleReminder("Don't show this again")}
-          >
-            Don't show this again
           </button>
         </div>
       </div>

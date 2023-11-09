@@ -1,44 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { Animate } from "react-move";
+import {
+  CircularProgressbarWithChildren,
+  buildStyles,
+} from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import RadialSeparators from "./RadialSeparators";
 
-const AnimatedProgressProvider = (props) => {
-  const [isAnimated, setIsAnimated] = useState(false);
-  const [value, setValue] = useState(props.valueStart);
-  let interval;
-
-  useEffect(() => {
-    if (props.repeat) {
-      interval = window.setInterval(() => {
-        setIsAnimated((prevIsAnimated) => !prevIsAnimated);
-      }, props.duration * 1000);
-    } else {
-      setIsAnimated(true);
-    }
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [props.repeat, props.duration]);
+const AnimatedProgressProvider = ({ value }) => {
+  const [percentage, setPercentage] = useState(1);
 
   useEffect(() => {
-    setValue(isAnimated ? props.valueEnd : props.valueStart);
-  }, [isAnimated, props.valueEnd, props.valueStart]);
+    setTimeout(() => {
+      if (percentage < value) {
+        setPercentage((prevPercentage) => prevPercentage + 1);
+      }
+    }, 15);
+  }, [value, percentage]);
 
   return (
-    <Animate
-      start={() => ({
-        value: props.valueStart,
-      })}
-      update={() => ({
-        value: [isAnimated ? props.valueEnd : props.valueStart],
-        timing: {
-          duration: props.duration * 1000,
-          ease: props.easingFunction,
-        },
+    <CircularProgressbarWithChildren
+      background={true}
+      value={percentage}
+      backgroundPadding={5}
+      text={`${percentage}%`}
+      strokeWidth={10}
+      styles={buildStyles({
+        pathColor: "#fff",
+        textSize: "10px",
+        backgroundColor: "#646cff",
+        trailColor: "rgba(129, 140, 248)",
+        strokeLinecap: "butt",
+        textColor: "#fff",
       })}
     >
-      {({ value }) => props.children(value)}
-    </Animate>
+      <RadialSeparators
+        count={15}
+        style={{
+          background: "#646cff",
+          width: "2px",
+          height: `${15}%`,
+        }}
+      />
+    </CircularProgressbarWithChildren>
   );
 };
 

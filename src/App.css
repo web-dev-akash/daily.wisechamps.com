@@ -1,3 +1,6 @@
+html {
+  background-color: #fff !important;
+}
 :root {
   font-family: "Poppins", sans-serif;
   line-height: 1.5;
@@ -20,8 +23,6 @@ a:hover {
 
 body {
   margin: 0;
-  /* display: flex;
-  place-items: center; */
   min-height: 100vh;
 }
 
