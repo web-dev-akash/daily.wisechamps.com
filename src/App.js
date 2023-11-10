@@ -140,6 +140,8 @@ export const App = () => {
     }
   };
 
+  console.log("Streak :", streak);
+
   const handleSubmit = async ({
     contactId,
     questionId,
