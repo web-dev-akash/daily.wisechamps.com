@@ -8,16 +8,26 @@ import correct from "./assets/correct.png";
 import incorrect from "./assets/incorrect.png";
 import logo from "./assets/Logo.png";
 import "animate.css";
-import { CarousalMain } from "./Components/Carousel/js/CarousalMain";
-import { Stats } from "./Components/Stats";
+import { Stats } from "./Components/Stats/Stats";
 import { Box } from "@chakra-ui/react";
+import { ExistingUser } from "./Components/ExistingUser";
+import { NewUser } from "./Components/NewUser";
+import { Question } from "./Components/Question";
+import { ShowAnswer } from "./Components/ShowAnswer";
+import { NoUserFound } from "./Components/NoUserFound";
+import { RegistrationForm } from "./Components/RegistrationForm";
+import { Referral } from "./Components/Referral";
+import { ReferFriend } from "./Components/ReferFriend";
+import { Feedback } from "./Components/Feedback";
+import { RemindAndUserAdded } from "./Components/RemindAndUserAdded";
+import { Home } from "./Components/Home";
 
 const participants = Math.round((789 - 340) * Math.random()) + 340;
 
 const loadingMessages = [
   "1 hard question makes you learn more than 50 simple ones",
   "An apple a day keeps you healthy, and a question a day makes you smart!",
-  `${participants} have already attempted today’s quiz`,
+  `${participants} have already attempted today's quiz`,
   "Rome was not built in a day, and so is true of your IQ!",
   "Habit is what turns talent into genius! Make sure you practice everyday",
 ];
@@ -33,13 +43,6 @@ export const App = () => {
   const [refereePhone, setRefereePhone] = useState(
     query.get("refereeId") ? query.get("refereeId") : ""
   );
-
-  const [feedbackData, setFeedbackData] = useState({
-    difficulty: "",
-    think: "",
-    remind: "",
-  });
-  // To attend more such exiting question join out live quizzes
 
   const [refereeName, setRefereeName] = useState("");
   const [refereeId, setRefereeId] = useState("");
@@ -112,8 +115,6 @@ export const App = () => {
     });
   };
 
-  console.log("Form", registerForm);
-
   const handleClick = async (emailParam) => {
     try {
       setLoading(true);
@@ -139,8 +140,6 @@ export const App = () => {
       console.log("error is ------------", error);
     }
   };
-
-  console.log("Streak :", streak);
 
   const handleSubmit = async ({
     contactId,
@@ -278,6 +277,29 @@ export const App = () => {
     }
   };
 
+  const handleReminder = async (value) => {
+    try {
+      setLoading(true);
+      const urlUser = `https://backend.wisechamps.app/user/feedback`;
+      const resUser = await axios.post(urlUser, {
+        feedbackData: {
+          email: email,
+          difficulty: value,
+          think: "",
+          remind: "",
+        },
+      });
+      !contact && !refereePhone
+        ? setMode("registernow")
+        : setMode("remindmetomorrow");
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      setError(true);
+      console.log("error is ------------", error);
+    }
+  };
+
   useEffect(() => {
     if (email) {
       handleClick(email);
@@ -287,129 +309,10 @@ export const App = () => {
     }
   }, []);
 
-  if (mode === "registernow") {
+  if (error) {
     return (
-      <div
-        className="main registerForm"
-        style={{
-          marginTop: "10px",
-        }}
-      >
-        {refereeName ? (
-          <p>
-            <b>{refereeName}</b> attending these quizzes daily and becoming
-            smarter everyday. <br /> <br />
-            Join our Whatsapp group and solve such amazing questions everyday.
-          </p>
-        ) : (
-          <p
-            style={{
-              textAlign: "center",
-              fontWeight: "500",
-              marginBottom: "5px",
-            }}
-          >
-            Register with us to save your progress and get reminders.
-          </p>
-        )}
-        <br />
-        <hr />
-        <br />
-        <form>
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              inputMode="email"
-              onChange={handleFormChange}
-              name="email"
-              required
-            />
-          </div>
-          <div>
-            <label>Phone</label>
-            <input
-              type="number"
-              inputMode="tel"
-              onChange={handleFormChange}
-              name="phone"
-              required
-            />
-          </div>
-          <div>
-            <label>Parent Name</label>
-            <input
-              type="text"
-              inputMode="text"
-              onChange={handleFormChange}
-              name="parent_name"
-              required
-            />
-          </div>
-          <div>
-            <label>Student Name</label>
-            <input
-              type="text"
-              inputMode="text"
-              onChange={handleFormChange}
-              name="student_name"
-              required
-            />
-          </div>
-          <div>
-            <label>Student Grade</label>
-            <select
-              onChange={handleFormChange}
-              name="student_grade"
-              defaultValue={referralGrade}
-              required
-            >
-              <option value={"none"}>-None-</option>
-              <option value={"1"}>Grade 1</option>
-              <option value={"2"}>Grade 2</option>
-              <option value={"3"}>Grade 3</option>
-              <option value={"4"}>Grade 4</option>
-              <option value={"5"}>Grade 5</option>
-              <option value={"6"}>Grade 6</option>
-              <option value={"7"}>Grade 7</option>
-              <option value={"8"}>Grade 8</option>
-            </select>
-          </div>
-          <button
-            style={
-              refereePhone
-                ? {
-                    border: "none",
-                    padding: "0.5rem 1.5rem",
-                    width: "unset",
-                    marginTop: "10px",
-                  }
-                : {
-                    width: "50%",
-                    padding: "0",
-                    marginTop: "20px",
-                  }
-            }
-            id={!refereePhone ? "submit-btn" : ""}
-            onClick={(e) => handleRegisterFormClick(e, registerForm, refereeId)}
-          >
-            {refereePhone ? (
-              <img
-                alt="Share on WhatsApp"
-                src={whatsapp}
-                width={"40px"}
-                height={"40px"}
-              />
-            ) : null}
-            <p
-              style={{
-                fontWeight: "600",
-              }}
-            >
-              {refereeName ? "Join Now" : "Submit"}
-            </p>
-          </button>
-        </form>
+      <div>
+        <h1>Something Went Wrong. Please Refresh</h1>
       </div>
     );
   }
@@ -451,215 +354,8 @@ export const App = () => {
     );
   }
 
-  if (mode === "referee") {
-    return (
-      <div
-        style={{
-          width: "90%",
-          margin: "auto",
-        }}
-      >
-        <p>
-          Lets find out if you are smarter than <b>{refereeName} </b>who
-          challenged you today
-        </p>
-        <button
-          id="submit-btn"
-          style={{
-            marginTop: "15px",
-          }}
-          onClick={() => setMode("refereeReady")}
-        >
-          I am Ready
-        </button>
-      </div>
-    );
-  }
-
-  if (mode === "refereeReady") {
-    return (
-      <div className="main mainReferee">
-        <h3>Select Your Grade</h3>
-        <label className="label">
-          <input
-            value="1"
-            name="value-radio"
-            id="value-2"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 1
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="2"
-            name="value-radio"
-            id="value-3"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 2
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="3"
-            name="value-radio"
-            id="value-4"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 3
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="4"
-            name="value-radio"
-            id="value-4"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 4
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="5"
-            name="value-radio"
-            id="value-2"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 5
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="6"
-            name="value-radio"
-            id="value-3"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 6
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="7"
-            name="value-radio"
-            id="value-4"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 7
-          </div>
-        </label>
-        <label className="label">
-          <input
-            value="8"
-            name="value-radio"
-            id="value-4"
-            className="radio-input"
-            type="radio"
-            onChange={handleChangeReferralGrade}
-          />
-          <div className="radio-design"></div>
-          <div
-            className="label-text"
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Grade 8
-          </div>
-        </label>
-        <button
-          id="submit-btn"
-          onClick={() => handleGradeSubmit(referralGrade)}
-          style={{
-            marginTop: "10px",
-            width: "100%",
-          }}
-        >
-          Submit
-        </button>
-      </div>
-    );
+  if (mode === "nouser") {
+    return <NoUserFound setMode={setMode} />;
   }
 
   if (mode === "alreadyAttempted") {
@@ -673,52 +369,54 @@ export const App = () => {
     );
   }
 
-  if (mode === "referfriend") {
+  if (mode === "existinguser") {
     return (
-      <div className="main quizSubmitted">
-        <p style={{}}>
-          Challenge your friend and get a garunteed free credit once they answer
-          this question.
-        </p>
-        <div>
-          <a href={whatsappHerf}>
-            <img
-              alt="Share on WhatsApp"
-              src={whatsapp}
-              width={"40px"}
-              height={"40px"}
-            />
-            <p>Challenge a friend</p>
-          </a>
-        </div>
-      </div>
+      <ExistingUser
+        handleChange={handleChange}
+        handleClick={handleClick}
+        email={email}
+      />
     );
   }
 
-  const handleReminder = async (value) => {
-    try {
-      setLoading(true);
-      const urlUser = `https://backend.wisechamps.app/user/feedback`;
-      const resUser = await axios.post(urlUser, {
-        feedbackData: {
-          email: email,
-          difficulty: value,
-          think: "",
-          remind: "",
-        },
-      });
-      !contact && !refereePhone
-        ? setMode("registernow")
-        : setMode("remindmetomorrow");
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setError(true);
-      console.log("error is ------------", error);
-    }
-  };
+  if (mode === "referee") {
+    return <Referral refereeName={refereeName} setMode={setMode} />;
+  }
 
-  console.log("Feedback data :", feedbackData);
+  if (mode === "refereeReady") {
+    return (
+      <NewUser
+        handleChangeReferralGrade={handleChangeReferralGrade}
+        handleGradeSubmit={handleGradeSubmit}
+        referralGrade={referralGrade}
+      />
+    );
+  }
+
+  if (mode === "question") {
+    return (
+      <Question
+        contact={contact}
+        handleChangeOption={handleChangeOption}
+        handleReferralSubmit={handleReferralSubmit}
+        handleSubmit={handleSubmit}
+        option={option}
+        question={question}
+        refereePhone={refereePhone}
+      />
+    );
+  }
+
+  if (mode === "showanswer") {
+    return (
+      <ShowAnswer
+        correct={correct}
+        incorrect={incorrect}
+        option={option}
+        question={question}
+      />
+    );
+  }
 
   if (mode === "attemptcaptured") {
     return (
@@ -736,330 +434,38 @@ export const App = () => {
   }
 
   if (mode === "likedtodaysquestion") {
-    return (
-      <div className="feedback">
-        <p
-          style={{
-            fontSize: "17px",
-            fontWeight: "500",
-            margin: "20px",
-          }}
-        >
-          Liked Today's Question ?
-          <br /> Will you come back tomorrow ?
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px",
-          }}
-        >
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleReminder("Yes")}
-          >
-            Yes
-          </button>
-          <button
-            id="submit-btn"
-            style={{
-              width: "70%",
-            }}
-            onClick={() => handleReminder("No")}
-          >
-            No
-          </button>
-        </div>
-      </div>
-    );
+    return <Feedback handleReminder={handleReminder} />;
   }
 
   if (mode === "remindmetomorrow" || mode === "useradded") {
     return (
-      <div className="quizSubmitted">
-        <p
-          style={{
-            fontSize: "17px",
-            fontWeight: "500",
-            margin: "20px",
-          }}
-        >
-          To stay connected and get daily reminders
-        </p>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <a href={whatsappChannelLink}>
-            <img
-              alt="Join WhatsApp Channel"
-              src={whatsapp}
-              width={"40px"}
-              height={"40px"}
-            />
-            <p>Join WhatsApp Channel</p>
-          </a>
-          <a href={groupLink[referralGrade]}>
-            <img
-              alt="Join WhatsApp Group"
-              src={whatsapp}
-              width={"40px"}
-              height={"40px"}
-            />
-            <p>Join WhatsApp Group</p>
-          </a>
-        </div>
-      </div>
+      <RemindAndUserAdded
+        groupLink={groupLink}
+        referralGrade={referralGrade}
+        whatsapp={whatsapp}
+        whatsappChannelLink={whatsappChannelLink}
+      />
     );
   }
 
-  if (mode === "question") {
+  if (mode === "referfriend") {
+    return <ReferFriend whatsapp={whatsapp} whatsappHerf={whatsappHerf} />;
+  }
+
+  if (mode === "registernow") {
     return (
-      <div className="question">
-        <div className="radio-input-wrapper">
-          <p>{question.Question ? question.Question : ""}</p>
-          {question.Question_Image_URL ? (
-            <div
-              style={{
-                maxWidth: "100%",
-                margin: "10px auto",
-                border: "1px solid #ccc",
-              }}
-            >
-              <img src={question.Question_Image_URL} alt="Question_Image" />
-            </div>
-          ) : (
-            ""
-          )}
-          <label className="label">
-            <input
-              value="Option 1"
-              name="value-radio"
-              id="value-2"
-              className="radio-input"
-              type="radio"
-              onChange={handleChangeOption}
-            />
-            <div className="radio-design"></div>
-            <div className="label-text">{question.Option_1}</div>
-          </label>
-          <label className="label">
-            <input
-              value="Option 2"
-              name="value-radio"
-              id="value-3"
-              className="radio-input"
-              type="radio"
-              onChange={handleChangeOption}
-            />
-            <div className="radio-design"></div>
-            <div className="label-text">{question.Option_2}</div>
-          </label>
-          <label className="label">
-            <input
-              value="Option 3"
-              name="value-radio"
-              id="value-4"
-              className="radio-input"
-              type="radio"
-              onChange={handleChangeOption}
-            />
-            <div className="radio-design"></div>
-            <div className="label-text">{question.Option_3}</div>
-          </label>
-          <label className="label">
-            <input
-              value="Option 4"
-              name="value-radio"
-              id="value-4"
-              className="radio-input"
-              type="radio"
-              onChange={handleChangeOption}
-            />
-            <div className="radio-design"></div>
-            <div className="label-text">{question.Option_4}</div>
-          </label>
-          <button
-            style={{ marginTop: "20px" }}
-            id="submit-btn"
-            onClick={
-              refereePhone
-                ? () => handleReferralSubmit()
-                : () =>
-                    handleSubmit({
-                      contactId: contact,
-                      questionId: question.id,
-                      optionSelected: option,
-                      correctAnswer: question.Correct_Answer === option,
-                    })
-            }
-          >
-            Submit
-          </button>
-        </div>
-      </div>
+      <RegistrationForm
+        handleFormChange={handleFormChange}
+        handleRegisterFormClick={handleRegisterFormClick}
+        Id={refereeId}
+        refereeName={refereeName}
+        refereePhone={refereePhone}
+        referralGrade={referralGrade}
+        registerForm={registerForm}
+        whatsapp={whatsapp}
+      />
     );
   }
 
-  if (mode === "showanswer") {
-    return (
-      <div
-        className={
-          question.Correct_Answer === option
-            ? "correctAnswer animate__animated animate__bounceIn"
-            : "wrongAnswer animate__animated animate__bounceIn"
-        }
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "10px",
-        }}
-      >
-        <p
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "2px solid white",
-            borderRadius: "50%",
-          }}
-        >
-          {question.Correct_Answer === option ? (
-            <img src={correct} alt="correct-logo" width={"50px"} />
-          ) : (
-            <img src={incorrect} alt="incorrect-logo" width={"40px"} />
-          )}
-        </p>
-        <p>
-          {question.Correct_Answer === option
-            ? "Correct Answer"
-            : "Incorrect Answer"}
-        </p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div>
-        <h1>Something Went Wrong. Please Refresh</h1>
-      </div>
-    );
-  }
-
-  if (mode === "nouser") {
-    return (
-      <div className="email-not-found">
-        <p>
-          This Email is not registered with us. <br />
-          Please use a registered Email Address
-        </p>
-        <div>
-          <button id="submit-btn" onClick={() => setMode("")}>
-            Try Again
-          </button>
-          <button
-            id="submit-btn"
-            onClick={() => {
-              window.open(
-                `https://wa.me/919717094422?text=${encodeURIComponent(
-                  "Please send me my registered email"
-                )}`,
-                "_blank"
-              );
-              setMode("");
-            }}
-          >
-            Get Your Registered Email
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (mode === "newuser") {
-    return (
-      <div>
-        <h1>New User</h1>
-      </div>
-    );
-  }
-
-  if (mode === "existinguser") {
-    return (
-      <div className="main">
-        <h3>Email</h3>
-        <div className="form">
-          <input
-            className="input"
-            type="email"
-            placeholder="Enter Email"
-            inputMode="email"
-            onChange={handleChange}
-          />
-          <p>* Please use the registered Email.</p>
-          <button id="submit-btn" onClick={() => handleClick(email)}>
-            Submit
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        minHeight: "85vh",
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "10px",
-      }}
-    >
-      <header>
-        <img
-          src={logo}
-          alt="Wisechamps"
-          style={{
-            position: "absolute",
-            width: "120px",
-            top: "20px",
-            left: "20px",
-          }}
-        />
-      </header>
-      <div
-        className="main_div"
-        style={{
-          borderRadius: "20px",
-        }}
-      >
-        <CarousalMain />
-        <div>
-          <p>Welcome to Wisechamps</p>
-          {/* <p>Please </p> */}
-        </div>
-        <div className="main-div-btn">
-          <button id="submit-btn" onClick={() => setMode("existinguser")}>
-            Registered User
-          </button>
-          <button id="submit-btn" onClick={() => setMode("refereeReady")}>
-            New User
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return <Home logo={logo} setMode={setMode} />;
 };

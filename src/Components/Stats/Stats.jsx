@@ -1,9 +1,9 @@
-import { Box, Button, ChakraProvider, Tag, Text } from "@chakra-ui/react";
+import { Box, ChakraProvider, Tag, Text } from "@chakra-ui/react";
 import "react-circular-progressbar/dist/styles.css";
 import React, { createRef, useState } from "react";
-import right from "../assets/correct.png";
-import wrong from "../assets/incorrect.png";
-import preview from "../assets/preview.jpg";
+import right from "../../assets/correct.png";
+import wrong from "../../assets/incorrect.png";
+import preview from "../../assets/preview.jpg";
 import AnimatedProgressProvider from "./AnimatedProgressProvider";
 import { useScreenshot } from "./Screenshot";
 import Compressor from "compressorjs";
