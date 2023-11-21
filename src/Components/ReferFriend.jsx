@@ -2,10 +2,13 @@ import React from "react";
 
 export const ReferFriend = ({ whatsappHerf, whatsapp }) => {
   return (
-    <div className="main quizSubmitted">
-      <p style={{}}>
-        Challenge your friend and get a garunteed free credit once they answer
-        this question.
+    <div className="quizSubmitted">
+      <p>
+        Challenge your friend and get a{" "}
+        <p>
+          <b>Guaranteed FREE credit </b>
+        </p>
+        once they answer this question.
       </p>
       <div>
         <a href={whatsappHerf}>

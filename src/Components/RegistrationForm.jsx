@@ -26,12 +26,22 @@ export const RegistrationForm = ({
       ) : (
         <p
           style={{
-            textAlign: "center",
+            textAlign: "left",
             fontWeight: "500",
             marginBottom: "5px",
           }}
         >
-          Register with us to save your progress and get reminders.
+          <p style={{ fontSize: "18px" }}>Register here and get :</p>
+          <p>
+            <li>
+              <b>Guaranteed 5 FREE Live Quiz Credits</b>
+            </li>
+          </p>{" "}
+          <p>
+            <li>
+              <b>Personlized progress report.</b>
+            </li>
+          </p>
         </p>
       )}
       <br />
@@ -61,17 +71,6 @@ export const RegistrationForm = ({
           />
         </div>
         <div>
-          <label htmlFor="parent_name">Parent Name</label>
-          <input
-            type="text"
-            inputMode="text"
-            onChange={handleFormChange}
-            name="parent_name"
-            id="parent_name"
-            required
-          />
-        </div>
-        <div>
           <label htmlFor="student_name">Student Name</label>
           <input
             type="text"
@@ -79,6 +78,17 @@ export const RegistrationForm = ({
             onChange={handleFormChange}
             name="student_name"
             id="student_name"
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="parent_name">Parent Name</label>
+          <input
+            type="text"
+            inputMode="text"
+            onChange={handleFormChange}
+            name="parent_name"
+            id="parent_name"
             required
           />
         </div>

@@ -444,6 +444,7 @@ export const App = () => {
         referralGrade={referralGrade}
         whatsapp={whatsapp}
         whatsappChannelLink={whatsappChannelLink}
+        phone={phone}
       />
     );
   }
