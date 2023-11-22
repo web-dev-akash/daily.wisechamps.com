@@ -119,7 +119,7 @@ export const App = () => {
     try {
       setLoading(true);
       localStorage.setItem("wisechamps_email", emailParam);
-      const url = `https://backend.wisechamps.app/dailyQuiz`;
+      const url = `https://backend.wisechamps.com/dailyQuiz`;
       const res = await axios.post(url, { email: emailParam });
       const mode = res.data.mode;
       setMode(mode);
@@ -151,7 +151,7 @@ export const App = () => {
       setMode("showanswer");
       setTimeout(async () => {
         setLoading(true);
-        const url = `https://backend.wisechamps.app/question/attempt`;
+        const url = `https://backend.wisechamps.com/question/attempt`;
         const res = await axios.post(url, {
           contactId,
           questionId,
@@ -175,7 +175,7 @@ export const App = () => {
   const handleGradeSubmit = async (referralGrade) => {
     try {
       setLoading(true);
-      const url = `https://backend.wisechamps.app/quizgrade`;
+      const url = `https://backend.wisechamps.com/quizgrade`;
       const res = await axios.post(url, { grade: referralGrade });
       const mode = res.data.mode;
       if (mode === "question") {
@@ -240,7 +240,7 @@ export const App = () => {
         return;
       }
       setLoading(true);
-      const url = `https://backend.wisechamps.app/user/add`;
+      const url = `https://backend.wisechamps.com/user/add`;
       const res = await axios.post(url, {
         email: data.email,
         phone: data.phone,
@@ -262,7 +262,7 @@ export const App = () => {
   const fetchReferee = async (phone) => {
     try {
       setLoading(true);
-      const urlUser = `https://backend.wisechamps.app/user`;
+      const urlUser = `https://backend.wisechamps.com/user`;
       const resUser = await axios.post(urlUser, { phone: phone });
       const modeUser = resUser.data.mode;
       if (modeUser === "user") {
@@ -280,7 +280,7 @@ export const App = () => {
   const handleReminder = async (value) => {
     try {
       setLoading(true);
-      const urlUser = `https://backend.wisechamps.app/user/feedback`;
+      const urlUser = `https://backend.wisechamps.com/user/feedback`;
       const resUser = await axios.post(urlUser, {
         feedbackData: {
           email: email,
